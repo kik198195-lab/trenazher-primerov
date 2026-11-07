@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Переход через десяток — со счётами</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --ink:#1f2d3d;--grid:#cfe5f5;--blue:#3d8bff;--red:#ff5d6c;--green:#2fbf71;--yellow:#ffd43b;--orange:#ffa62b;--violet:#8b5cf6;--wood:#c98a4b;color-scheme:light}
+*,*::before,*::after{box-sizing:inherit;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;color:var(--ink);background:#fff;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:26px 26px;user-select:none;-webkit-user-select:none}
+.app{max-width:1100px;margin:0 auto;padding:8px 12px 16px}
+.head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:800}
+h1{font-size:20px;margin:0}
+.cnt{font-size:15px;background:#fff;border:3px solid var(--ink);border-radius:12px;padding:4px 10px;white-space:nowrap}
+.tabs,.groups{display:flex;gap:8px;overflow-x:auto;padding:8px 2px 4px;scrollbar-width:thin}
+.tab,.chipg{font:inherit;font-weight:800;white-space:nowrap;border:3px solid var(--ink);background:#fff;border-radius:14px;cursor:pointer;flex:none}
+.tab{font-size:18px;padding:8px 14px}.tab.on{background:var(--yellow)}
+.chipg{font-size:15px;padding:6px 11px}.chipg.on{background:var(--blue);color:#fff}.chipg.dn{border-color:var(--green)}
+.info{font-size:14px;font-weight:800;color:#4f6b88;margin:4px 2px 0}
+.msg{margin:8px 0 10px;padding:10px 14px;border:3px solid var(--yellow);background:#fffbe6;border-radius:18px;font-size:18px;font-weight:800;line-height:1.3;min-height:76px;display:flex;gap:10px;align-items:center}
+.msg.ok{background:#e9fbef;border-color:var(--green)}.msg.soft{background:#fff1e3;border-color:var(--orange)}.msg.hint{background:#eaf3ff;border-color:var(--blue)}
+.msg span:first-child{font-size:32px}
+.ab{background:#fff;border:5px solid var(--wood);border-radius:16px;padding:10px 10px 4px;position:relative}
+.lab{font-size:13px;font-weight:800;color:#6b7f95;margin:0 0 0 4px}
+.wire{position:relative;display:grid;grid-template-columns:repeat(10,1fr);gap:2px;height:38px;align-items:center;margin-bottom:6px}
+.wire::before{content:"";position:absolute;left:0;right:0;top:50%;height:4px;background:#8b6a43;border-radius:2px;transform:translateY(-50%)}
+.slot{position:relative;display:grid;place-items:center;height:36px}
+.bead{width:min(100%,32px);aspect-ratio:1;border-radius:50%;border:3px solid rgba(0,0,0,.25);box-shadow:inset 0 -4px 0 rgba(0,0,0,.18);position:relative;cursor:pointer}
+.bead.blue{background:var(--blue)}.bead.blue.h2{background:#2563c9}
+.bead.red{background:var(--red)}.bead.red.h2{background:#d93d4d}
+.bead.orange{background:var(--orange)}.bead.orange.h2{background:#e08a10}
+.bead.violet{background:var(--violet)}
+.bead.gone{background:#e8ecf1;border:3px dashed #b8c2cf;box-shadow:none}
+.bead.mv{animation:pop .35s}
+.bead.sk{animation:shake .35s}
+.slot.empty::after{content:"";width:10px;height:10px;border-radius:50%;background:#e7d5bd}
+@keyframes pop{from{transform:scale(.4)}to{transform:scale(1)}}
+@keyframes pulse{50%{transform:scale(1.2)}}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.ab[data-hl=empty] .slot.empty::after{width:24px;height:24px;background:#fff3bf;border:3px dashed var(--orange);animation:pulse .8s infinite}
+.ab[data-hl=B] #wB .bead:not(.gone),.ab[data-hl=A] #wA .bead:not(.gone),.ab[data-hl=T] #wT .bead:not(.gone){animation:pulse .8s infinite}
+.ten{position:absolute;right:12px;top:6px;font-weight:900;color:var(--green);font-size:15px}
+.card{margin:12px 0 6px;background:#fff;border:3px solid var(--ink);border-radius:20px;padding:12px 8px 12px;box-shadow:0 5px 0 var(--ink)}
+.eq{display:grid;grid-template-columns:repeat(5,auto);justify-content:center;align-items:center;column-gap:10px;font-size:clamp(32px,10vw,46px);font-weight:900}
+.eq>span{justify-self:center;text-align:center}
+.eq .ar{grid-column:3;grid-row:2;justify-self:center;display:flex;flex-direction:column;align-items:center}
+.split .box{min-width:46px;height:50px;font-size:30px}
+.box{display:inline-grid;place-items:center;min-width:52px;height:56px;padding:0 6px;border:3px solid var(--ink);border-radius:10px;font-size:34px;font-weight:900;background:#fff}
+.box.cur{background:#fff3bf;border-color:var(--orange)}
+.box.ok{background:#d7f7e3;border-color:var(--green)}
+.box.bad{background:#ffe0e0;border-color:var(--red);animation:shake .35s}
+.eq .box.ans{min-width:78px;height:62px;font-size:38px}
+.split{display:flex;gap:10px}
+.eq{padding-top:.55em}
+.dg{position:relative;display:inline-block}
+.dg .mk{position:absolute;top:-.62em;left:50%;transform:translateX(-50%);font-size:.5em;line-height:1;color:#e08a10;font-weight:900;white-space:nowrap;text-decoration:none;animation:pop .4s}
+.dg.cut{text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:4px}
+.bor{text-align:center;margin-top:10px}
+.xbtn{font:inherit;font-weight:900;font-size:19px;padding:10px 16px;border-radius:16px;border:3px solid var(--ink);background:var(--violet);color:#fff;box-shadow:0 4px 0 var(--ink);cursor:pointer;animation:pulse 1s infinite}
+.lines{margin-top:10px;font-size:24px;font-weight:900;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:34px}
+.lines .ln{animation:pop .4s}
+.lines .pend{display:flex;align-items:center;gap:8px;color:#4f6b88}
+.lines .pend .q{color:var(--red)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.key,.b{font:inherit;font-weight:900;border-radius:16px;border:3px solid var(--ink);background:#fff;box-shadow:0 4px 0 var(--ink);cursor:pointer;touch-action:manipulation}
+.key{height:56px;font-size:30px}
+.key:active,.b:active,.xbtn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.ctrl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.b{height:54px;font-size:18px}
+#hintBtn{background:var(--yellow)}#next{background:var(--blue);color:#fff}
+#next.pulse{animation:pulse .9s infinite}
+.conf{position:fixed;top:-40px;pointer-events:none;animation:fall 2s linear forwards;z-index:9}
+@keyframes fall{to{transform:translateY(110vh) rotate(300deg)}}
+@media(prefers-reduced-motion:reduce){.bead,.lines .ln,#next.pulse,.conf,.xbtn{animation:none!important}}
+.cols{display:flex;flex-direction:column}
+.colL,.colR{display:contents}
+.ab{order:1}.card{order:2}.lines{order:3}.pad{order:4}.ctrl{order:5}
+.head h1{font-size:18px}
+.tabs,.groups{padding:6px 2px 2px}
+.msg{min-height:58px;font-size:17px;margin:6px 0 8px;padding:8px 12px}
+.ab{padding:6px 8px 2px;margin-bottom:8px}
+.lab{font-size:12px}
+.wire{height:30px;margin-bottom:3px}.slot{height:28px}.bead{width:min(100%,26px)}
+.card{margin:0 0 4px;padding:8px 6px}
+.eq{font-size:clamp(28px,8vw,40px)}
+.box{min-width:44px;height:46px;font-size:28px}
+.eq .box.ans{min-width:64px;height:50px;font-size:32px}
+.split .box{min-width:40px;height:44px;font-size:26px}
+.lines{font-size:20px;margin-top:4px}
+.pad{grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
+.key{height:46px;font-size:26px}
+.ctrl{margin-top:8px}.b{height:46px;font-size:16px}
+@media(min-width:760px){
+  .cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+  .colL,.colR{display:block}
+  .ab,.card,.lines,.pad,.ctrl{order:0}
+  .ab{margin-bottom:6px}
+  .key{height:52px}.eq{font-size:44px}
+  .lines{font-size:22px;align-items:flex-start;padding-left:10px}
+}
+.answ{display:inline-flex;gap:6px}
+.eq .box.ans1{min-width:46px;height:56px;font-size:34px}
+button{color:var(--ink)}
+.tab,.chipg,.key,.b{background-color:#fff;color:var(--ink)}
+.tab.on,#hintBtn{background-color:var(--yellow);color:var(--ink)}
+.chipg.on,#next,.xbtn{color:#fff}
+.chipg.on{background-color:var(--blue)}
+#next{background-color:var(--blue)}
+.xbtn{background-color:var(--violet)}
+.author{text-align:center;font-size:13px;font-weight:400;color:#8a9bb0;line-height:1.6;padding:12px 4px 6px;margin-top:6px;border-top:1px dashed var(--grid)}
+.author b{font-weight:600;color:#8a9bb0}
+.author a{color:#b08aa0;font-weight:400;text-decoration:none;border-bottom:1px solid #d9c2d0;user-select:text}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="head"><h1>🔟 Переход через десяток</h1><div class="cnt">Решено: <b id="solved">0</b></div></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="groups" id="groups"></div>
+  <div class="info" id="info"></div>
+  <button class="chipg" id="gtog" style="display:none;margin:4px 0">Выбрать группу</button>
+  <div class="msg" id="msg"></div>
+
+  <div class="cols"><div class="colL"><div class="ab" id="ab"><div class="ten" id="ten"></div><div id="wires"></div></div>
+    <div class="lines" id="lines"></div></div>
+
+  <div class="colR"><div class="card">
+    <div class="eq" id="eq"></div>
+    <div class="bor" id="bor"></div>
+    </div>
+
+  <div class="pad" id="pad"></div>
+  <div class="ctrl"><button class="b" id="hintBtn">💡 Подсказка</button><button class="b" id="next">➡ Дальше</button></div></div></div>
+  <div class="author">Разработчик: <b>Курбаниязова Ильмира Климентовна</b> · Instagram: <a href="https://www.instagram.com/dlya.urokov23/" target="_blank" rel="noopener noreferrer">@dlya.urokov23</a></div>
+</div>
+<script>
+(function(){
+'use strict';
+var $=function(s){return document.querySelector(s);};
+function el(t,c,h){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;}
+function rnd(a,b){return a+Math.floor(Math.random()*(b-a+1));}
+var PRAISE=['Отлично!','Верно!','Молодец!'];
+
+/* ---------- группы примеров ---------- */
+function addGroups(){var G=[];for(var a=9;a>=2;a--){var L=[];for(var b=11-a;b<=9;b++)L.push([a,b]);G.push({label:'к '+a,list:L});}return G;}
+function cap(L){if(L.length<=4)return L;var n=L.length;return [L[0],L[Math.floor(n/3)],L[Math.floor(2*n/3)],L[n-1]];}
+function subGroups(){var G=[];for(var a=11;a<=18;a++){var L=[];for(var b=a-10+1;b<=9;b++)L.push([a,b]);G.push({label:'из '+a,list:cap(L)});}
+  G.push({label:'Занимаем десяток',gen:'B'});G.push({label:'Двузначные',gen:'C'});return G;}
+var GROUPS={add:addGroups(),sub:subGroups()};
+var showG=false,mode='add',gi={add:0,sub:0},idx=0,ex=null,solved=0,timer=null,pendAnim=null,lock=false,doneG={},firstGen={};
+
+function genPair(type){
+  if(type==='B'){if(!firstGen.B){firstGen.B=1;return [42,7];}var ta=rnd(2,9),ua=rnd(1,8),ub=rnd(ua+1,9);return [ta*10+ua,ub];}
+  if(!firstGen.C){firstGen.C=1;return [32,17];}
+  var t=rnd(2,9),tb=rnd(1,t-1),u=rnd(1,8),v=rnd(u+1,9);return [t*10+u,tb*10+v];
+}
+
+/* ---------- примеры ---------- */
+function base(e){e.step=0;e.fixed={};e.input='';e.lines=[];e.hint=0;e.wrong=0;e.done=false;e.hl='';e.bad=false;return e;}
+function mkAdd(a,b){
+  var need=10-a,rest=b-need,total=a+b;
+  var e=base({mode:'add',a:a,b:b,total:total,moved:0,sign:'+'});
+  e.finalMsg=a+' + '+b+' = '+total+'. Сначала дополнили '+a+' до 10, потом прибавили '+rest+'.';
+  e.steps=[
+   {t:'h0',ans:need,prompt:'У числа '+a+' не хватает до 10. Сколько? Впиши в первый домик. Можно двигать бусины.',line:a+' + '+need+' = 10',
+    after:function(){animTo('moved',need);},
+    wrong:['Сколько нужно добавить к '+a+', чтобы получилось 10?','Посмотри на пустые места в верхнем ряду. Сколько их?','Сосчитай пустые места по одному.'],
+    hints:['Сколько нужно добавить к '+a+', чтобы получилось 10?',{m:'Пустые места в верхнем ряду мигают. Сосчитай их.',hl:'empty'},{m:'Двигай красные бусины вверх, пока не получится десяток. Потом впиши число.',hl:'empty',run:function(){animTo('moved',need);}}]},
+   {t:'h1',ans:rest,prompt:'Из '+b+' взяли '+need+'. Сколько осталось? Впиши во второй домик.',line:b+' = '+need+' + '+rest,
+    wrong:['Посмотри, сколько красных бусин ушло к десятку.','Сосчитай красные бусины, которые остались внизу.','Из '+b+' убери то, что уже взяли.'],
+    hints:['Сколько красных бусин осталось внизу?',{m:'Красные бусины внизу мигают. Сосчитай их.',hl:'B'},{m:'Сосчитай мигающие бусины по одной и впиши число.',hl:'B'}]},
+   {t:'ans',ans:total,pend:'10 + '+rest+' = ?',prompt:'Теперь 10 + '+rest+'. Сколько получилось? Впиши ответ.',line:'10 + '+rest+' = '+total,
+    wrong:['Теперь прибавь оставшиеся бусины к десятку.','Начни с 10 и добавляй по одной.','10 и ещё '+rest+' — сколько будет?'],
+    hints:['Сколько будет 10 и ещё '+rest+'?',{m:'Десяток уже собран. Прибавь к нему красные бусины внизу.',hl:'B'},{m:'Считай от десяти вперёд на '+rest+'.',hl:'B'}]}
+  ];
+  return e;
+}
+function mkSub(a,b,type){
+  var ta=Math.floor(a/10),ua=a%10,tb=Math.floor(b/10),ub=b%10,rest=ub-ua,remT=ta-1-tb,u2=10-rest,total=a-b;
+  var e=base({mode:'sub',type:type,a:a,b:b,ta:ta,ua:ua,tb:tb,ub:ub,rest:rest,total:total,borrowed:type==='A',rmB:0,rmA:0,rmT:0,twoDigit:total>=10,sign:'−'});
+  e.finalMsg=a+' − '+b+' = '+total+'. '+(type==='A'?'Сначала убрали '+ua+', потом ещё '+rest+' из десятка.':'Заняли десяток, вычитаемое разделили на части и вычли по шагам.');
+  var S=[];
+  if(type!=='A')S.push({t:'borrow',prompt:'Нужно убрать '+ub+', а отдельных единиц только '+ua+'. Займи десяток: нажми на фиолетовую бусину.',line:a+' = '+((ta-1)*10)+' + '+(ua+10),
+    wrong:[],hints:['Хватит ли '+ua+' единиц, чтобы убрать '+ub+'?',{m:'Фиолетовые бусины — десятки. Один десяток можно обменять на единицы.',hl:'T'},{m:'Нажми на фиолетовую бусину или на кнопку «Занять десяток».',hl:'T'}]});
+  S.push({t:'h0',ans:ua,prompt:'Сначала убираем единицы, которые лежат отдельно. Сколько их? Впиши в первый домик.',line:(10+ua)+' − '+ua+' = 10',
+    after:function(){animTo('rmB',ua);},
+    wrong:['Сколько бусин лежит отдельно от десятка?','Сосчитай бусины в нижнем ряду.','Сосчитай их по одной.'],
+    hints:['Сколько единиц лежит отдельно от десятка?',{m:'Отдельные бусины мигают. Сосчитай их.',hl:'B'},{m:'Нажми на каждую мигающую бусину — она уберётся. Потом впиши число.',hl:'B'}]});
+  S.push({t:'h1',ans:rest,prompt:'Всего нужно убрать '+ub+', уже убрали '+ua+'. Сколько ещё убрать? Впиши во второй домик.',line:ub+' = '+ua+' + '+rest,
+    after:function(){animTo('rmA',rest);},
+    wrong:['Сколько нужно добавить к '+ua+', чтобы получилось '+ub+'?','Всего '+ub+', убрали '+ua+'. Сколько осталось убрать?','Посчитай от '+ua+' до '+ub+' по одному.'],
+    hints:['Нужно убрать '+ub+', а уже убрали '+ua+'. Сколько ещё?',{m:'Подумай: сколько добавить к '+ua+', чтобы получилось '+ub+'?',hl:''},{m:'Нажимай на бусины десятка — они убираются. Убери нужное число и впиши его.',hl:'A'}]});
+  var last={t:'w',writeU:true,ans:u2,pend:'10 − '+rest+' = ?',prompt:type==='A'?'Сколько осталось? Впиши результат.':'Из десятка убрали '+rest+'. Сколько осталось? Впиши результат.',line:'10 − '+rest+' = '+u2};
+  var _unused=0;
+  last.wrong=['Сколько бусин осталось в десятке?','Сосчитай неубранные бусины.','Из 10 убери '+rest+' — сколько будет?'];
+  last.hints=['Сколько осталось в десятке, если убрали '+rest+'?',{m:'Оставшиеся бусины мигают. Сосчитай их.',hl:'A'},{m:'Сосчитай мигающие бусины по одной.',hl:'A'}];
+  S.push(last);
+  if(type!=='A'){
+    if(tb>0)S.push({t:'w2',ans:remT*10,pend:((ta-1)*10)+' − '+(tb*10)+' = ?',prompt:'Теперь вычти десятки: '+((ta-1)*10)+' − '+(tb*10)+'. Сколько получилось?',line:((ta-1)*10)+' − '+(tb*10)+' = '+(remT*10),
+      after:function(){animTo('rmT',tb);},
+      wrong:['Сколько десятков осталось после того, как убрали '+tb+'?','Сосчитай фиолетовые бусины и умножь на 10.','Один десяток — это 10.'],
+      hints:['Сколько десятков останется, если из '+(ta-1)+' убрать '+tb+'?',{m:'Фиолетовые бусины мигают. Нажми на нужное число — они уберутся.',hl:'T'},{m:'Каждая бусина — 10. Сосчитай оставшиеся десятки.',hl:'T'}]});
+    if(remT>0)S.push({t:'t',ans:remT,prompt:'Теперь десятки. Сколько десятков осталось на счётах? Впиши в ответ.',line:(remT*10)+' + '+u2+' = '+total,
+      wrong:['Сосчитай фиолетовые бусины в верхнем ряду.','Каждая бусина — это десяток.','Посчитай по одной.'],
+      hints:['Сколько фиолетовых бусин осталось в верхнем ряду?',{m:'Фиолетовые бусины мигают. Сосчитай их.',hl:'T'},{m:'Каждая бусина — один десяток. Впиши, сколько их.',hl:'T'}]});
+  }
+  e.steps=S;return e;
+}
+
+/* ---------- анимация бусин ---------- */
+function animTo(key,target){
+  if(timer){clearInterval(timer);timer=null;if(pendAnim)ex[pendAnim.k]=pendAnim.t;}
+  if(ex[key]>=target){render();return;}
+  var cur=ex;pendAnim={k:key,t:target};
+  timer=setInterval(function(){
+    if(cur!==ex){clearInterval(timer);timer=null;return;}
+    if(ex[key]<target){ex[key]++;render();}else{clearInterval(timer);timer=null;pendAnim=null;}
+  },280);
+}
+
+/* ---------- отрисовка ---------- */
+function say(t,k){var m=$('#msg');m.className='msg'+(k?' '+k:'');m.innerHTML='<span>🦉</span><span></span>';m.lastChild.textContent=t;}
+function wire(id,label,n,beadFn){
+  var w=el('div','');w.append(el('div','lab',label));
+  var r=el('div','wire');r.id=id;
+  for(var i=0;i<10;i++){var b=i<n?beadFn(i):null;var s=el('div','slot'+(b?'':' empty'));if(b)s.append(b);r.append(s);}
+  w.append(r);return w;
+}
+function bead(cls,h2,fn){var d=el('div','bead '+cls+(h2?' h2':''));if(fn)d.onclick=function(){fn(d);};return d;}
+function renderAb(){
+  var W=$('#wires');W.innerHTML='';$('#ab').dataset.hl=ex.hl||'';var ten='';
+  if(ex.mode==='add'){
+    var nA=ex.a+ex.moved,nB=ex.b-ex.moved;
+    W.append(wire('wA','Первое число: '+ex.a,10,function(i){if(i>=nA)return null;return bead(i<ex.a?'blue':'red mv',i>=5);}));
+    W.append(wire('wB','Второе число: '+ex.b+' — нажимай на красные бусины',10,function(i){if(i>=nB)return null;return bead('red',i>=5,tapAddBead);}));
+    if(nA===10)ten='Десяток! ✔';
+  }else{
+    if(ex.type!=='A'){
+      var cT=ex.ta-(ex.borrowed?1:0);
+      W.append(wire('wT','Десятки (1 бусина = 10)',10,function(i){if(i>=cT)return null;return bead('violet'+(i>=cT-ex.rmT?' gone':''),false,tapT);}));
+    }
+    if(ex.borrowed){
+      W.append(wire('wA',ex.type==='A'?'Десяток':'Десяток из обмена',10,function(i){return bead((ex.type==='A'?'blue':'orange')+(i>=10-ex.rmA?' gone':''),i>=5,tapA);}));
+    }
+    W.append(wire('wB','Единицы',ex.ua,function(i){return bead('red'+(i>=ex.ua-ex.rmB?' gone':''),false,tapB);}));
+  }
+  $('#ten').textContent=ten;
+}
+function boxEl(target,cls){
+  var st=ex.steps[ex.step],f=ex.fixed[target],isCur=!ex.done&&st&&st.t===target;
+  var v=f!=null?f:(isCur?ex.input:'');
+  return el('div','box '+(cls||'')+(f!=null?' ok':(isCur?(ex.bad?' bad':' cur'):'')),v===''?'':String(v));
+}
+function ansEl(){
+  var w=el('span','answ'),st=ex.steps[ex.step],isT=!ex.done&&st&&st.t==='t';
+  if(ex.twoDigit)w.append(el('div','box ans1'+(ex.fixed.t!=null?' ok':(isT?(ex.bad?' bad':' cur'):'')),ex.fixed.t!=null?String(ex.fixed.t):(isT?ex.input:'')));
+  w.append(el('div','box ans1'+(ex.fixed.u!=null?' ok':''),ex.fixed.u!=null?String(ex.fixed.u):''));
+  return w;
+}
+function numEl(){
+  var s=el('span','');
+  if(ex.mode==='sub'&&ex.type!=='A'&&ex.borrowed){
+    var t=el('span','dg',String(ex.ta));t.append(el('span','mk','•'));
+    var u=el('span','dg',String(ex.ua));u.append(el('span','mk','1'));
+    s.append(t,u);
+  }else s.textContent=String(ex.a);
+  return s;
+}
+function render(){
+  renderAb();
+  var eq=$('#eq');eq.innerHTML='';
+  eq.append(numEl(),el('span','',ex.sign),el('span','',String(ex.b)),el('span','','='),(ex.mode==='sub'?ansEl():boxEl('ans','ans')));
+  var ar=el('div','ar','<svg width="90" height="30" viewBox="0 0 90 30"><path d="M45 3 L18 27 M45 3 L72 27" stroke="#1f2d3d" stroke-width="3" fill="none" stroke-linecap="round"/></svg>');
+  var sp=el('div','split');sp.append(boxEl('h0'),boxEl('h1'));ar.append(sp);eq.append(ar);
+  var st=ex.steps[ex.step];
+  var bor=$('#bor');bor.innerHTML='';
+  if(!ex.done&&st&&st.t==='borrow'){var xb=el('button','xbtn','🔄 Занять десяток');xb.onclick=doBorrow;bor.append(xb);}
+  var L=$('#lines');L.innerHTML='';
+  ex.lines.forEach(function(t){L.append(el('div','ln',t));});
+  if(!ex.done&&st&&st.pend){
+    var p=el('div','pend');var parts=st.pend.split('?');
+    p.append(el('span','',parts[0]));
+    if(st.t==='ans')p.append(el('span','q','?'));else p.append(boxEl(st.t));
+    L.append(p);
+  }
+  $('#solved').textContent=solved;
+  $('#next').classList.toggle('pulse',ex.done);
+}
+function renderHeader(){
+  var T=$('#tabs');T.innerHTML='';
+  [['add','➕ Сложение'],['sub','➖ Вычитание']].forEach(function(x){var b=el('button','tab'+(x[0]===mode?' on':''),x[1]);b.onclick=function(){mode=x[0];idx=0;load();renderHeader();};T.append(b);});
+  var G=$('#groups');G.innerHTML='';G.style.display=(mode==='sub'&&!showG)?'none':'flex';var gt=$('#gtog');gt.style.display=mode==='sub'?'':'none';gt.textContent=showG?'✖ Скрыть список групп':'📋 Выбрать группу';
+  GROUPS[mode].forEach(function(g,i){var b=el('button','chipg'+(i===gi[mode]?' on':'')+(doneG[mode+i]?' dn':''),(doneG[mode+i]?'✓ ':'')+g.label);b.onclick=function(){gi[mode]=i;idx=0;load();renderHeader();};G.append(b);});
+  var g=GROUPS[mode][gi[mode]];
+  var cntI=g.list?g.list.length:5;$('#info').textContent='Ступень '+(gi[mode]+1)+' из '+GROUPS[mode].length+' · Пример '+(idx+1)+' из '+cntI+' · '+(g.list?(mode==='add'?'Прибавляем ':'Вычитаем '):'')+g.label;
+  var ch=G.querySelector('.on');if(ch&&ch.scrollIntoView)try{ch.scrollIntoView({block:'nearest',inline:'center'});}catch(e){}
+}
+function load(){
+  if(timer){clearInterval(timer);timer=null;pendAnim=null;}lock=false;
+  var g=GROUPS[mode][gi[mode]],p;
+  if(g.list)p=g.list[idx];else p=genPair(g.gen);
+  ex=mode==='add'?mkAdd(p[0],p[1]):mkSub(p[0],p[1],g.gen||'A');
+  render();say(ex.steps[0].prompt);renderHeader();
+}
+
+/* ---------- ход решения ---------- */
+function succeed(st,custom){
+  ex.fixed[st.t]=st.ans;if(st.writeU)ex.fixed.u=st.ans;ex.input='';ex.wrong=0;ex.hint=0;ex.hl='';ex.bad=false;
+  ex.lines.push(st.line);if(st.after)st.after();
+  ex.step++;
+  if(ex.step>=ex.steps.length){
+    ex.done=true;solved++;render();say('🌟 Молодец! '+ex.finalMsg,'ok');confetti();
+  }else{render();say((custom||(st.writeU?'Верно! Пишем '+st.ans+' в единицы ответа.':PRAISE[rnd(0,2)]))+' '+ex.steps[ex.step].prompt,'ok');}
+}
+function key(d){
+  if(!ex||ex.done||lock)return;
+  var st=ex.steps[ex.step];
+  if(d==='C'){ex.input='';render();return;}
+  if(d==='B'){ex.input=ex.input.slice(0,-1);render();return;}
+  if(st.t==='borrow'){say('Сначала займи десяток: нажми на фиолетовую бусину или на кнопку «Занять десяток».','soft');return;}
+  var full=String(st.ans);if(ex.input.length>=full.length)return;
+  ex.input+=d;
+  if(ex.input===full){succeed(st);return;}
+  if(full.indexOf(ex.input)===0){render();return;}
+  ex.wrong++;ex.bad=true;lock=true;render();
+  say('Давай посмотрим ещё раз. '+st.wrong[Math.min(ex.wrong-1,2)]+(ex.wrong>=3?' Можно нажать «Подсказка».':''),'soft');
+  var cur=ex;setTimeout(function(){if(cur!==ex)return;lock=false;ex.bad=false;ex.input='';render();},800);
+}
+function hint(){
+  if(!ex||ex.done||lock)return;
+  var st=ex.steps[ex.step];ex.hint=Math.min(3,ex.hint+1);var h=st.hints[ex.hint-1];
+  if(typeof h==='string'){say(h,'hint');return;}
+  say(h.m,'hint');ex.hl=h.hl||'';if(h.run)h.run();render();
+}
+function doBorrow(){
+  if(!ex||ex.done||lock)return;var st=ex.steps[ex.step];
+  if(st.t!=='borrow'){say('Десяток уже занят.','hint');return;}
+  ex.borrowed=true;succeed(st,'Верно! Один десяток стал десятью единицами.');
+}
+function tapAddBead(){if(ex.done||lock)return;if(ex.a+ex.moved<10&&ex.moved<ex.b){ex.moved++;render();say(ex.a+ex.moved===10?'Десяток собран! Теперь впиши числа в домики.':'Ещё одна бусина поехала к десятку.','ok');}}
+function tapT(){
+  if(ex.done||lock)return;var st=ex.steps[ex.step];
+  if(!ex.borrowed){doBorrow();return;}
+  if(st.t==='w2'&&ex.rmT<ex.tb){ex.rmT++;render();say('Хорошо, десяток убран.','ok');}
+  else say('Десятки пока не трогаем.','hint');
+}
+function tapB(){
+  if(ex.done||lock)return;
+  if(!ex.borrowed){say('Единиц не хватает, чтобы убрать '+ex.ub+'. Займи десяток!','soft');return;}
+  if(ex.rmB<ex.ua){ex.rmB++;render();say('Правильно: сначала убираем те, что лежат отдельно.','ok');}
+  else say('Отдельные единицы уже убраны.','hint');
+}
+function tapA(){
+  if(ex.done||lock)return;
+  if(ex.rmB<ex.ua){say('Сначала убери единицы, которые лежат отдельно.','soft');return;}
+  if(ex.rmA<ex.rest){ex.rmA++;render();say(ex.rmA===ex.rest?'Правильно! Столько и нужно было убрать.':'Хорошо, продолжай.','ok');}
+  else say('Всё нужное уже убрано.','hint');
+}
+function next(){
+  idx++;var g=GROUPS[mode][gi[mode]];
+  var cnt=g.list?g.list.length:5;if(idx>=cnt){
+    doneG[mode+gi[mode]]=1;idx=0;
+    if(gi[mode]+1<GROUPS[mode].length)gi[mode]++;
+    load();renderHeader();say('Группа пройдена! 🎉 Идём дальше: '+GROUPS[mode][gi[mode]].label+'.','ok');return;}
+  load();
+}
+function confetti(){for(var i=0;i<18;i++){var s=el('span','conf',['⭐','🌟','✨','🎉'][i%4]);s.style.left=(3+Math.random()*92)+'vw';s.style.animationDelay=Math.random()*.5+'s';s.style.fontSize=(18+Math.random()*14)+'px';document.body.append(s);(function(n){setTimeout(function(){n.remove();},2600);})(s);}}
+
+var pad=$('#pad');
+[1,2,3,4,5,6,7,8,9,'С',0,'⌫'].forEach(function(k){var b=el('button','key',String(k));b.onclick=function(){key(k==='С'?'C':k==='⌫'?'B':String(k));};pad.append(b);});
+$('#hintBtn').onclick=hint;$('#next').onclick=next;$('#gtog').onclick=function(){showG=!showG;renderHeader();};
+document.addEventListener('keydown',function(e){if(/^[0-9]$/.test(e.key))key(e.key);else if(e.key==='Backspace')key('B');});
+window.__t={key:key,get ex(){return ex;},setMode:function(m,g){mode=m;if(g!=null)gi[m]=g;idx=0;load();renderHeader();},next:next,tapB:tapB,tapA:tapA,doBorrow:doBorrow,hint:hint};
+load();
+})();
+</script>
+</body>
+</html>
